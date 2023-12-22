@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { NavLink, Outlet, Form } from "react-router-dom";
+import { Link, NavLink, Outlet, Form } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getNotes } from "../features/note/noteSlice";
 
@@ -14,30 +14,34 @@ const Root = () => {
   return (
     <>
       <div id="sidebar">
-        <h1>Notes</h1>
         <div>
           <Form id="search-form" role="search">
             <input
-              id="q"
-              name="q"
-              aria-label="Search notes"
+              type="text"
+              id="filter"
+              name="filter"
               placeholder="Search"
-              type="search"
+              aria-label="Search notes"
             />
             <div id="search-spinner" aria-hidden hidden={true} />
             <div className="sr-only" aria-live="polite"></div>
           </Form>
-          <Form method="post">
-            <button type="submit">New</button>
-          </Form>
+          <Link className="btn" to="/notes/add">
+            New
+          </Link>
         </div>
         <nav>
           {notes.length ? (
-            <ul>
+            <ul className="notes__list">
               {notes.map((note) => (
                 <li key={note.id}>
-                  <NavLink to={`notes/${note.id}`}>
-                    <i>{note.title}</i>
+                  <NavLink
+                    to={`notes/${note.id}`}
+                    className={({ isActive, isPending }) =>
+                      isActive ? "active" : isPending ? "pending" : ""
+                    }
+                  >
+                    <i>{note.title}</i> {note.favorite && <span>★</span>}
                   </NavLink>
                 </li>
               ))}
@@ -48,9 +52,17 @@ const Root = () => {
             </p>
           )}
         </nav>
+        <h1>Note App</h1>
       </div>
       <div id="detail">
-        <Outlet />
+        <div id="user_panel">
+          <span>User name</span>
+          <img src="/src/assets/images/user_default.png" alt="username" />
+          <button>Logout</button>
+        </div>
+        <div className="note_container">
+          <Outlet />
+        </div>
       </div>
     </>
   );
