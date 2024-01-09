@@ -1,23 +1,23 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
   clearNote,
-  createNote,
+  setNoteTitle,
   setNoteContent,
   setNoteFavorite,
-  setNoteTitle,
-  updateNote,
-} from "../features/note/noteSlice";
+  createNote,
+} from "../features/note/notesSlice";
+
+export const loader = (dispatch) => () => {
+  dispatch(clearNote());
+  return null;
+};
 
 const NewNote = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { title, content, favorite } = useSelector((store) => store.note);
-
-  useEffect(() => {
-    dispatch(clearNote());
-  }, []);
+  const { note } = useSelector((store) => store.notes);
 
   const titleChangeHandler = (event) => {
     dispatch(setNoteTitle(event.target.value));
@@ -28,17 +28,15 @@ const NewNote = () => {
   };
 
   const favoriteChangeHandler = (event) => {
-    dispatch(setNoteFavorite(!favorite));
+    dispatch(setNoteFavorite(!note.favorite));
   };
 
   const sendUpdateRequest = () => {
-    dispatch(createNote({ title, content, favorite }));
-    dispatch(clearNote());
+    dispatch(createNote(note));
     navigate("/");
   };
 
   const backHandler = () => {
-    dispatch(clearNote());
     navigate("/");
   };
 
@@ -52,11 +50,13 @@ const NewNote = () => {
         <button
           name="favorite"
           className="favorite_btn"
-          value={favorite ? "false" : "true"}
+          value={note.favorite ? "false" : "true"}
           onClick={favoriteChangeHandler}
-          aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
+          aria-label={
+            note.favorite ? "Remove from favorites" : "Add to favorites"
+          }
         >
-          {favorite ? "★" : "☆"}
+          {note.favorite ? "★" : "☆"}
         </button>
       </div>
       <input
@@ -64,13 +64,13 @@ const NewNote = () => {
         id="title"
         onChange={titleChangeHandler}
         placeholder="Title"
-        value={title}
+        value={note.title}
       />
       <label htmlFor="content">Text:</label>
       <textarea
         id="content"
         onChange={contentChangeHandler}
-        value={content}
+        value={note.content}
         rows={4}
       ></textarea>
       <button className="save_btn" onClick={sendUpdateRequest}>

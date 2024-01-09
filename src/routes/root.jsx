@@ -1,15 +1,16 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Link, NavLink, Outlet, Form } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getNotes } from "../features/note/noteSlice";
+import { getNotes } from "../features/note/notesSlice";
+
+export const loader = (dispatch) => () => {
+  dispatch(getNotes());
+  return null;
+};
 
 const Root = () => {
   const dispatch = useDispatch();
-  const { notes } = useSelector((store) => store.note);
-
-  useEffect(() => {
-    dispatch(getNotes());
-  }, []);
+  const { notes } = useSelector((store) => store.notes);
 
   return (
     <>

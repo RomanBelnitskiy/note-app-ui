@@ -1,32 +1,51 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { deleteNote } from "../features/note/noteSlice";
+import { Link, useLoaderData, useNavigate } from "react-router-dom";
+import { deleteNote } from "../features/note/notesSlice";
+import { getNote } from "../features/note/notesSlice";
+import Spinner from "../components/Spinner";
+
+export const loader =
+  (dispatch) =>
+  ({ params }) => {
+    if (params.noteId) {
+      dispatch(getNote(params.noteId));
+      return true;
+    }
+    return false;
+  };
 
 const Note = () => {
-  const { noteId } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { notes } = useSelector((store) => store.note);
-  const selectedNote = notes.filter((note) => note.id == noteId)[0];
+  const isNoteSelected = useLoaderData();
+  const { note, isLoading } = useSelector((store) => store.notes);
 
-  if (!selectedNote) {
+  const deleteHandler = () => {
+    dispatch(deleteNote(note.id));
+    navigate("/");
+  };
+
+  if (!isNoteSelected) {
     return (
-      <div className="note">
-        <h1>Note not found</h1>
+      <div className="loading_spinner">
+        <h2>No selected note.</h2>
       </div>
     );
   }
 
-  const deleteHandler = () => {
-    dispatch(deleteNote(noteId));
-    navigate("/");
-  };
+  if (!note || isLoading) {
+    return (
+      <div className="loading_spinner">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <>
-      <h2>{selectedNote.title}</h2>
-      <p>{selectedNote.content}</p>
+      <h2>{note.title}</h2>
+      <p>{note.content}</p>
       <div className="note_actions">
         <Link to="edit" className="btn">
           Edit

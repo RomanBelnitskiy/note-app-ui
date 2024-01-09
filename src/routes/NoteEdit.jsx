@@ -1,24 +1,26 @@
-import React, { useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import Spinner from "../components/Spinner";
 import {
-  clearNote,
-  setNoteById,
+  setNote,
   setNoteContent,
   setNoteFavorite,
   setNoteTitle,
   updateNote,
-} from "../features/note/noteSlice";
+} from "../features/note/notesSlice";
+
+export const loader =
+  (dispatch) =>
+  ({ params }) => {
+    dispatch(setNote(params.noteId));
+    return null;
+  };
 
 const NoteEdit = () => {
-  const { noteId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { title, content, favorite } = useSelector((store) => store.note);
-
-  useEffect(() => {
-    dispatch(setNoteById(noteId));
-  }, [noteId]);
+  const { note, isLoading } = useSelector((store) => store.notes);
 
   const titleChangeHandler = (event) => {
     dispatch(setNoteTitle(event.target.value));
@@ -29,19 +31,25 @@ const NoteEdit = () => {
   };
 
   const favoriteChangeHandler = (event) => {
-    dispatch(setNoteFavorite(!favorite));
+    dispatch(setNoteFavorite(!note.favorite));
   };
 
   const sendUpdateRequest = () => {
-    dispatch(updateNote({ id: noteId, title, content, favorite }));
-    dispatch(clearNote());
+    dispatch(updateNote(note));
     navigate("..", { relative: "path" });
   };
 
   const backHandler = () => {
-    dispatch(clearNote());
     navigate("..", { relative: "path" });
   };
+
+  if (!note || isLoading) {
+    return (
+      <div className="loading_spinner">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="note_edit">
@@ -53,11 +61,13 @@ const NoteEdit = () => {
         <button
           name="favorite"
           className="favorite_btn"
-          value={favorite ? "false" : "true"}
+          value={note.favorite ? "false" : "true"}
           onClick={favoriteChangeHandler}
-          aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
+          aria-label={
+            note.favorite ? "Remove from favorites" : "Add to favorites"
+          }
         >
-          {favorite ? "★" : "☆"}
+          {note.favorite ? "★" : "☆"}
         </button>
       </div>
       <input
@@ -65,13 +75,13 @@ const NoteEdit = () => {
         id="title"
         onChange={titleChangeHandler}
         placeholder="Title"
-        value={title}
+        value={note.title}
       />
       <label htmlFor="content">Text:</label>
       <textarea
         id="content"
         onChange={contentChangeHandler}
-        value={content}
+        value={note.content}
         rows={4}
       ></textarea>
       <button className="save_btn" onClick={sendUpdateRequest}>
